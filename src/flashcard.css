@@ -1,0 +1,36 @@
+/* flashcard.css */
+#flashcard-container {
+    perspective: 1000px;
+}
+
+#flashcard {
+    width: 300px;
+    height: 200px;
+    position: relative;
+    transition: transform 1s;
+    transform-style: preserve-3d;
+}
+
+.side {
+    position: absolute;
+    width: 300px;
+    height: 200px;
+    line-height: 200px;
+    color: white;
+    text-align: center;
+    font-size: 40px;
+    backface-visibility: hidden;
+}
+
+.front {
+    background-color: #ff9800;
+}
+
+.back {
+    background-color: #f44336;
+    transform: rotateY(180deg);
+}
+
+#flashcard.flipped {
+    transform: rotateY(180deg);
+}
