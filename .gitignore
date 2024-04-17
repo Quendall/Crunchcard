@@ -1,0 +1,4 @@
+.server
+*.pyc
+
+__pycache__

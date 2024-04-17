@@ -20,3 +20,4 @@ document.getElementById('next').addEventListener('click', function() {
     document.getElementById('answer').innerText = flashcards[currentCard].answer;
     document.getElementById('flashcard').classList.remove('flipped');
 });
+
