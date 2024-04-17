@@ -16,9 +16,14 @@ CORS(app, origins=["http://localhost:8080"])
 cc = client_connector()
 
 @app.route("/cards", methods=["GET"])
-def get_flashcards():
+def get_cards():
     rows = cc.get_cards()
     return jsonify(rows), 200
+
+@app.route("/cards/<int:index>", methods=["PUT"])
+def update_card(index: int):
+    cc.update_card(index)
+    return jsonify({"message":"success"}), 200
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)

@@ -14,14 +14,15 @@ from dataclasses import dataclass
 
 @dataclass
 class User:
-    id: str
+    id: UUID
     name: str
     email: str
     role_id: int
 
+
 @dataclass
 class Participant:
-    user_id: str
+    user_id: UUID
     name: str
     email: str
     role_id: int
@@ -29,22 +30,23 @@ class Participant:
 
 @dataclass
 class CardSet:
-    set_id: str
+    set_id: UUID
     title: str
     desciption: str
     folder: str
     permissions: {int, Participant}
 
+
 @dataclass
 class Card:
-    id: str
-    set_id: str
-    title: str
-    question: str
+    card_id: UUID
+    set_id: UUID
     is_deleted: bool
+    question: str
     answer: str
     updated_at: str
     created_at: str
+
 
 @dataclass
 class Folder:
@@ -69,7 +71,7 @@ class client_connector:
         self.set_id = UUID("f31d55d4-5365-4575-8cb0-d2833ebf6783")
 
         # current selections
-        self.rows: ResultSet = None
+        self.cards = dict()
 
         # prepared statements
 
@@ -81,13 +83,13 @@ class client_connector:
             """
         )
 
-        # self.get_cards_stmt = self.session.prepare(
-        #     """
-        #     SELECT card_id, set_id, is_deleted, card_question, card_answer, updated_at, created_at
-        #     FROM card.card
-        #     WHERE set_id = f31d55d4-5365-4575-8cb0-d2833ebf6783;
-        #     """
-        # )
+        self.update_card_stmt = self.session.prepare(
+            """
+            UPDATE card.card
+            SET card_question = ?, card_answer = ?, updated_at = TOTIMESTAMP(NOW())
+            WHERE set_id = ? AND card_id = ?;
+            """
+        )
 
         # self.get_sets_stmt = self.session.prepare(
         #     """
@@ -99,8 +101,10 @@ class client_connector:
         # )
 
     def get_cards(self):
-        self.rows: ResultSet = self.session.execute(self.get_cards_stmt, [self.set_id])
-        return [dict(question=row.card_question, answer=row.card_answer) for row in self.rows]
+        rows: ResultSet = self.session.execute(self.get_cards_stmt, [self.set_id])
+        self.cards = [Card(*row) for row in rows]
+        # self.cards = {c.id : c for c in cards}
+        return self.cards
 
     # User functions
 
@@ -121,8 +125,11 @@ class client_connector:
     def delete_card(self):
         pass
 
-    def update_card(self):
-        pass
+    def update_card(self, index: int):
+        card = self.cards[index]
+        self.session.execute(
+            self.update_card_stmt, [card.question, card.answer, card.set_id, card.card_id]
+        )
 
     def getCluster(self):
         profile = ExecutionProfile(
